@@ -87,3 +87,52 @@ UPDATE employees.employees
 SET manager_emp_no = (SELECT emp_no FROM employees.dept_manager ORDER BY emp_no LIMIT 1)
 WHERE emp_no IN (SELECT emp_no FROM employees.dept_manager)
   AND emp_no <> (SELECT emp_no FROM employees.dept_manager ORDER BY emp_no LIMIT 1);
+
+-- ---------------------------------------------------------
+-- ecommerce schema seed (~200 orders)
+-- ---------------------------------------------------------
+INSERT INTO ecommerce.categories (category_name) VALUES
+('Electronics'), ('Books'), ('Home & Kitchen'), ('Sports & Outdoors'),
+('Toys & Games'), ('Clothing'), ('Beauty'), ('Grocery');
+
+INSERT INTO ecommerce.products (product_name, category_id, unit_price)
+SELECT
+    (ARRAY['Wireless','Portable','Smart','Classic','Premium','Compact','Deluxe','Eco','Pro','Ultra'])[floor(random()*10)+1]
+    || ' ' ||
+    (ARRAY['Headphones','Blender','Backpack','Lamp','Notebook','Watch','Speaker','Sneakers','Mug','Keyboard'])[floor(random()*10)+1],
+    (SELECT category_id FROM ecommerce.categories ORDER BY random() LIMIT 1),
+    round((5 + random() * 195)::numeric, 2)
+FROM generate_series(1, 40);
+
+INSERT INTO ecommerce.customers (first_name, last_name, email, signup_date)
+SELECT fn, ln,
+       lower(fn || '.' || ln || n || '@example.com'),
+       (DATE '2019-01-01' + (random() * 365 * 5)::int)
+FROM (
+    SELECT
+        (ARRAY['Alex','Jordan','Sam','Taylor','Morgan','Casey','Riley','Jamie','Drew','Cameron',
+               'Priya','Wei','Fatima','Carlos','Yuki','Ahmed','Olga','Diego','Mei','Sven',
+               'Emma','Liam','Noah','Ava','Sophia','Mason','Isabella','Ethan','Mia','Lucas'])[floor(random()*30)+1] AS fn,
+        (ARRAY['Reed','Brooks','Hayes','Cole','Bishop','Fox','Grant','Wells','Pierce','Sharp',
+               'Chen','Kim','Patel','Nguyen','Singh','Kowalski','Muller','Rossi','Andersen','Silva'])[floor(random()*20)+1] AS ln,
+        n
+    FROM generate_series(1, 50) AS n
+) sub;
+
+INSERT INTO ecommerce.orders (customer_id, order_date, status)
+SELECT
+    (SELECT customer_id FROM ecommerce.customers ORDER BY random() LIMIT 1),
+    (DATE '2022-01-01' + (random() * 365 * 2)::int),
+    (ARRAY['completed','completed','completed','shipped','cancelled'])[floor(random()*5)+1]
+FROM generate_series(1, 200);
+
+-- 1-4 line items per order, random product each.
+INSERT INTO ecommerce.order_items (order_id, product_id, quantity, unit_price)
+SELECT o.order_id, p.product_id, (1 + floor(random() * 4))::int, p.unit_price
+FROM ecommerce.orders o
+CROSS JOIN LATERAL (
+    SELECT product_id, unit_price
+    FROM ecommerce.products
+    ORDER BY random()
+    LIMIT (1 + floor(random() * 4))::int
+) p;

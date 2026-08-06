@@ -64,3 +64,47 @@ CREATE TABLE employees.salaries (
     PRIMARY KEY (emp_no, from_date)
 );
 CREATE INDEX idx_salaries_emp_no ON employees.salaries (emp_no);
+
+-- ---------------------------------------------------------
+-- ecommerce schema — Northwind-style storefront sample
+-- ---------------------------------------------------------
+CREATE SCHEMA ecommerce;
+
+CREATE TABLE ecommerce.categories (
+    category_id   SERIAL PRIMARY KEY,
+    category_name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE ecommerce.products (
+    product_id   SERIAL PRIMARY KEY,
+    product_name TEXT NOT NULL,
+    category_id  INT NOT NULL REFERENCES ecommerce.categories (category_id),
+    unit_price   NUMERIC(10, 2) NOT NULL CHECK (unit_price >= 0)
+);
+CREATE INDEX idx_products_category_id ON ecommerce.products (category_id);
+
+CREATE TABLE ecommerce.customers (
+    customer_id SERIAL PRIMARY KEY,
+    first_name  TEXT NOT NULL,
+    last_name   TEXT NOT NULL,
+    email       TEXT NOT NULL UNIQUE,
+    signup_date DATE NOT NULL
+);
+
+CREATE TABLE ecommerce.orders (
+    order_id    SERIAL PRIMARY KEY,
+    customer_id INT NOT NULL REFERENCES ecommerce.customers (customer_id),
+    order_date  DATE NOT NULL,
+    status      TEXT NOT NULL CHECK (status IN ('completed', 'shipped', 'cancelled'))
+);
+CREATE INDEX idx_orders_customer_id ON ecommerce.orders (customer_id);
+
+CREATE TABLE ecommerce.order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    order_id      INT NOT NULL REFERENCES ecommerce.orders (order_id),
+    product_id    INT NOT NULL REFERENCES ecommerce.products (product_id),
+    quantity      INT NOT NULL CHECK (quantity > 0),
+    unit_price    NUMERIC(10, 2) NOT NULL CHECK (unit_price >= 0)
+);
+CREATE INDEX idx_order_items_order_id ON ecommerce.order_items (order_id);
+CREATE INDEX idx_order_items_product_id ON ecommerce.order_items (product_id);
