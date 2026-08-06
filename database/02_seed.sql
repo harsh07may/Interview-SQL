@@ -34,9 +34,13 @@ SELECT
     (DATE '2005-01-01' + (random() * (365 * 19))::int)
 FROM generate_series(1, 200);
 
+-- ARRAY(...)-index a materialized department list so the random() call is a
+-- plain top-level expression (re-evaluated per output row) rather than living
+-- inside an uncorrelated subquery, which Postgres hoists and evaluates once
+-- for the whole statement — verified against a live postgres:17 instance.
 INSERT INTO employees.dept_emp (emp_no, dept_no, from_date, to_date)
 SELECT e.emp_no,
-       (SELECT dept_no FROM employees.departments ORDER BY random() LIMIT 1),
+       (ARRAY(SELECT dept_no FROM employees.departments))[1 + floor(random() * (SELECT count(*) FROM employees.departments))::int],
        e.hire_date,
        DATE '9999-01-01'
 FROM employees.employees e;
@@ -69,7 +73,12 @@ FROM (
            (40000 + floor(random() * 60000) + (n - 1) * 3000)::int AS salary,
            (e.hire_date + ((n - 1) * INTERVAL '2 years'))::date AS from_date
     FROM employees.employees e
-    CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 4)::int) AS n
+    -- "+ e.emp_no * 0" is a no-op arithmetically, but it makes this bound
+    -- reference the outer row, forcing Postgres to re-evaluate random() per
+    -- employee instead of computing one row count for the whole statement
+    -- (which would otherwise give every employee the same number of salary
+    -- records) — verified against a live postgres:17 instance.
+    CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 4 + e.emp_no * 0)::int) AS n
 ) sub;
 
 -- Org chart: every non-manager reports to their department's current manager.
