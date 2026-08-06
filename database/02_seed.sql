@@ -1,0 +1,8 @@
+-- =========================================================
+-- database/02_seed.sql
+--
+-- Runs automatically on first container init, after 01_schema.sql.
+-- Seeds all three schemas with randomly generated but realistic data
+-- (a couple hundred rows per dataset's main entity table). Row counts
+-- vary run to run since generation uses random() — that's expected.
+-- =========================================================

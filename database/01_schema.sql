@@ -1,0 +1,10 @@
+-- =========================================================
+-- database/01_schema.sql
+--
+-- Runs automatically on first container init (mounted into
+-- /docker-entrypoint-initdb.d by docker-compose.yml). Creates three
+-- independent schemas, each a trimmed, realistic sample dataset:
+--   employees  — HR sample (departments, employees, org chart, salaries)
+--   ecommerce  — storefront sample (customers, products, orders)
+--   sakila     — DVD-rental sample (actors, films, rentals, payments)
+-- =========================================================
