@@ -258,9 +258,13 @@ SELECT
     (DATE '2005-01-01' + (random() * (365 * 19))::int)
 FROM generate_series(1, 200);
 
+-- ARRAY(...)-index a materialized department list so the random() call is a
+-- plain top-level expression (re-evaluated per output row) rather than living
+-- inside an uncorrelated subquery, which Postgres hoists and evaluates once
+-- for the whole statement — verified against a live postgres:17 instance.
 INSERT INTO employees.dept_emp (emp_no, dept_no, from_date, to_date)
 SELECT e.emp_no,
-       (SELECT dept_no FROM employees.departments ORDER BY random() LIMIT 1),
+       (ARRAY(SELECT dept_no FROM employees.departments))[1 + floor(random() * (SELECT count(*) FROM employees.departments))::int],
        e.hire_date,
        DATE '9999-01-01'
 FROM employees.employees e;
@@ -293,7 +297,12 @@ FROM (
            (40000 + floor(random() * 60000) + (n - 1) * 3000)::int AS salary,
            (e.hire_date + ((n - 1) * INTERVAL '2 years'))::date AS from_date
     FROM employees.employees e
-    CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 4)::int) AS n
+    -- "+ e.emp_no * 0" is a no-op arithmetically, but it makes this bound
+    -- reference the outer row, forcing Postgres to re-evaluate random() per
+    -- employee instead of computing one row count for the whole statement
+    -- (which would otherwise give every employee the same number of salary
+    -- records) — verified against a live postgres:17 instance.
+    CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 4 + e.emp_no * 0)::int) AS n
 ) sub;
 
 -- Org chart: every non-manager reports to their department's current manager.
@@ -410,12 +419,18 @@ INSERT INTO ecommerce.categories (category_name) VALUES
 ('Electronics'), ('Books'), ('Home & Kitchen'), ('Sports & Outdoors'),
 ('Toys & Games'), ('Clothing'), ('Beauty'), ('Grocery');
 
+-- category_id uses ARRAY(...)-index rather than "(SELECT ... ORDER BY random()
+-- LIMIT 1)": that scalar-subquery form is an uncorrelated subquery Postgres
+-- hoists and evaluates ONCE for the whole statement, giving every product the
+-- SAME category — verified against a live postgres:17 instance. Indexing into
+-- a materialized array keeps random() as a plain top-level expression, which
+-- re-evaluates correctly per output row.
 INSERT INTO ecommerce.products (product_name, category_id, unit_price)
 SELECT
     (ARRAY['Wireless','Portable','Smart','Classic','Premium','Compact','Deluxe','Eco','Pro','Ultra'])[floor(random()*10)+1]
     || ' ' ||
     (ARRAY['Headphones','Blender','Backpack','Lamp','Notebook','Watch','Speaker','Sneakers','Mug','Keyboard'])[floor(random()*10)+1],
-    (SELECT category_id FROM ecommerce.categories ORDER BY random() LIMIT 1),
+    (ARRAY(SELECT category_id FROM ecommerce.categories))[1 + floor(random() * (SELECT count(*) FROM ecommerce.categories))::int],
     round((5 + random() * 195)::numeric, 2)
 FROM generate_series(1, 40);
 
@@ -434,21 +449,28 @@ FROM (
     FROM generate_series(1, 50) AS n
 ) sub;
 
+-- customer_id: same ARRAY(...)-index technique as products.category_id above.
 INSERT INTO ecommerce.orders (customer_id, order_date, status)
 SELECT
-    (SELECT customer_id FROM ecommerce.customers ORDER BY random() LIMIT 1),
+    (ARRAY(SELECT customer_id FROM ecommerce.customers))[1 + floor(random() * (SELECT count(*) FROM ecommerce.customers))::int],
     (DATE '2022-01-01' + (random() * 365 * 2)::int),
     (ARRAY['completed','completed','completed','shipped','cancelled'])[floor(random()*5)+1]
 FROM generate_series(1, 200);
 
--- 1-4 line items per order, random product each.
+-- 1-4 line items per order, random product each. "+ o.order_id * 0" is a
+-- no-op arithmetically, but it makes the ORDER BY reference the outer row,
+-- forcing Postgres to treat this LATERAL subquery (including its LIMIT) as
+-- correlated and re-evaluate it per order. Without it, the subquery has no
+-- reference to `o` at all, so Postgres evaluates it once for the whole
+-- statement and every order gets an identical, fixed set of line items —
+-- verified against a live postgres:17 instance.
 INSERT INTO ecommerce.order_items (order_id, product_id, quantity, unit_price)
 SELECT o.order_id, p.product_id, (1 + floor(random() * 4))::int, p.unit_price
 FROM ecommerce.orders o
 CROSS JOIN LATERAL (
     SELECT product_id, unit_price
     FROM ecommerce.products
-    ORDER BY random()
+    ORDER BY random() + o.order_id * 0
     LIMIT (1 + floor(random() * 4))::int
 ) p;
 ```
@@ -594,16 +616,25 @@ SELECT
 FROM generate_series(1, 200);
 
 -- 3 actors per film.
+-- The "+ f.film_id * 0" is a no-op arithmetically, but it makes this ORDER BY
+-- reference the outer row, which forces Postgres to treat the LATERAL subquery
+-- as correlated. Without it, Postgres evaluates the subquery once for the
+-- whole statement (since nothing in it otherwise depends on f) and every film
+-- gets the SAME 3 actors — verified against a live postgres:17 instance.
 INSERT INTO sakila.film_actor (film_id, actor_id)
 SELECT f.film_id, a.actor_id
 FROM sakila.film f
 CROSS JOIN LATERAL (
-    SELECT actor_id FROM sakila.actor ORDER BY random() LIMIT 3
+    SELECT actor_id FROM sakila.actor ORDER BY random() + f.film_id * 0 LIMIT 3
 ) a;
 
--- 1 category per film.
+-- 1 category per film. ARRAY(...)-index a materialized category list so the
+-- random() call is a plain top-level expression (re-evaluated per output row)
+-- rather than living inside an uncorrelated subquery (which Postgres would
+-- otherwise hoist and evaluate once for the whole statement).
 INSERT INTO sakila.film_category (film_id, category_id)
-SELECT film_id, (SELECT category_id FROM sakila.category ORDER BY random() LIMIT 1)
+SELECT film_id,
+       (ARRAY(SELECT category_id FROM sakila.category))[1 + floor(random() * (SELECT count(*) FROM sakila.category))::int]
 FROM sakila.film;
 
 INSERT INTO sakila.customer (first_name, last_name, email, active)
@@ -619,11 +650,14 @@ FROM (
     FROM generate_series(1, 50) AS n
 ) sub;
 
+-- Same ARRAY(...)-index technique as film_category above, for the same reason:
+-- a plain "(SELECT ... ORDER BY random() LIMIT 1)" scalar subquery here would
+-- be hoisted and evaluated once, giving every rental the same film and customer.
 INSERT INTO sakila.rental (rental_date, film_id, customer_id, return_date)
 SELECT
     ts,
-    (SELECT film_id FROM sakila.film ORDER BY random() LIMIT 1),
-    (SELECT customer_id FROM sakila.customer ORDER BY random() LIMIT 1),
+    (ARRAY(SELECT film_id FROM sakila.film))[1 + floor(random() * (SELECT count(*) FROM sakila.film))::int],
+    (ARRAY(SELECT customer_id FROM sakila.customer))[1 + floor(random() * (SELECT count(*) FROM sakila.customer))::int],
     ts + (1 + floor(random() * 10)) * INTERVAL '1 day'
 FROM (
     SELECT (TIMESTAMP '2023-01-01' + (random() * 365 * 2) * INTERVAL '1 day') AS ts

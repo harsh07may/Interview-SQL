@@ -104,12 +104,13 @@ INSERT INTO ecommerce.categories (category_name) VALUES
 ('Electronics'), ('Books'), ('Home & Kitchen'), ('Sports & Outdoors'),
 ('Toys & Games'), ('Clothing'), ('Beauty'), ('Grocery');
 
+-- Uncorrelated subquery Postgres hoists and evaluates once — use ARRAY-index pattern for per-row randomization
 INSERT INTO ecommerce.products (product_name, category_id, unit_price)
 SELECT
     (ARRAY['Wireless','Portable','Smart','Classic','Premium','Compact','Deluxe','Eco','Pro','Ultra'])[floor(random()*10)+1]
     || ' ' ||
     (ARRAY['Headphones','Blender','Backpack','Lamp','Notebook','Watch','Speaker','Sneakers','Mug','Keyboard'])[floor(random()*10)+1],
-    (SELECT category_id FROM ecommerce.categories ORDER BY random() LIMIT 1),
+    (ARRAY(SELECT category_id FROM ecommerce.categories))[1 + floor(random() * (SELECT count(*) FROM ecommerce.categories))::int],
     round((5 + random() * 195)::numeric, 2)
 FROM generate_series(1, 40);
 
@@ -128,20 +129,22 @@ FROM (
     FROM generate_series(1, 50) AS n
 ) sub;
 
+-- Uncorrelated subquery Postgres hoists and evaluates once — use ARRAY-index pattern for per-row randomization
 INSERT INTO ecommerce.orders (customer_id, order_date, status)
 SELECT
-    (SELECT customer_id FROM ecommerce.customers ORDER BY random() LIMIT 1),
+    (ARRAY(SELECT customer_id FROM ecommerce.customers))[1 + floor(random() * (SELECT count(*) FROM ecommerce.customers))::int],
     (DATE '2022-01-01' + (random() * 365 * 2)::int),
     (ARRAY['completed','completed','completed','shipped','cancelled'])[floor(random()*5)+1]
 FROM generate_series(1, 200);
 
 -- 1-4 line items per order, random product each.
+-- Uncorrelated LATERAL subquery Postgres hoists and evaluates once — add harmless outer-column reference to make it correlated
 INSERT INTO ecommerce.order_items (order_id, product_id, quantity, unit_price)
 SELECT o.order_id, p.product_id, (1 + floor(random() * 4))::int, p.unit_price
 FROM ecommerce.orders o
 CROSS JOIN LATERAL (
     SELECT product_id, unit_price
     FROM ecommerce.products
-    ORDER BY random()
+    ORDER BY random() + o.order_id * 0
     LIMIT (1 + floor(random() * 4))::int
 ) p;
