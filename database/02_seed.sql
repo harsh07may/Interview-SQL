@@ -148,3 +148,87 @@ CROSS JOIN LATERAL (
     ORDER BY random() + o.order_id * 0
     LIMIT (1 + floor(random() * 4))::int
 ) p;
+
+-- ---------------------------------------------------------
+-- sakila schema seed (~200 films, ~200 rentals)
+-- ---------------------------------------------------------
+INSERT INTO sakila.actor (first_name, last_name)
+SELECT
+    (ARRAY['Penelope','Nick','Ed','Jennifer','Johnny','Bette','Grace','Matthew','Joe','Christian',
+           'Zero','Karl','Uma','Vivien','Cuba','Fred','Helen','Dan','Boris','Jon',
+           'Jeff','Jayne','Rip','Julianne','Milla','Angela','Chris','Sandra','Mary','Wesley'])[floor(random()*30)+1],
+    (ARRAY['Guiness','Wahlberg','Chase','Davis','Lollobrigida','Nicholson','Mostel','Johansson','Swank','Gable',
+           'Cage','Berry','Depp','Torn','Akroyd','Costner','Voight','Harris','Willis','Kilmer'])[floor(random()*20)+1]
+FROM generate_series(1, 50);
+
+INSERT INTO sakila.category (name) VALUES
+('Action'), ('Comedy'), ('Drama'), ('Documentary'), ('Horror'),
+('Sci-Fi'), ('Family'), ('Animation'), ('Thriller'), ('Romance');
+
+INSERT INTO sakila.film (title, release_year, rental_rate, rating, length)
+SELECT
+    (ARRAY['Academy','Ace','Adaptation','Affair','Africa','Agent','Alabama','Alamo','Alaska','Alien'])[floor(random()*10)+1]
+    || ' ' ||
+    (ARRAY['Dinosaur','Ghost','Rider','Story','Legend','Frontier','Chronicles','Voyage','Secret','Empire'])[floor(random()*10)+1],
+    2000 + floor(random() * 24)::int,
+    (ARRAY[0.99, 1.99, 2.99, 3.99, 4.99])[floor(random()*5)+1],
+    (ARRAY['G','PG','PG-13','R','NC-17'])[floor(random()*5)+1],
+    60 + floor(random() * 120)::int
+FROM generate_series(1, 200);
+
+-- 3 actors per film.
+-- The "+ f.film_id * 0" is a no-op arithmetically, but it makes this ORDER BY
+-- reference the outer row, which forces Postgres to treat the LATERAL subquery
+-- as correlated. Without it, Postgres evaluates the subquery once for the
+-- whole statement (since nothing in it otherwise depends on f) and every film
+-- gets the SAME 3 actors — verified against a live postgres:17 instance.
+INSERT INTO sakila.film_actor (film_id, actor_id)
+SELECT f.film_id, a.actor_id
+FROM sakila.film f
+CROSS JOIN LATERAL (
+    SELECT actor_id FROM sakila.actor ORDER BY random() + f.film_id * 0 LIMIT 3
+) a;
+
+-- 1 category per film. ARRAY(...)-index a materialized category list so the
+-- random() call is a plain top-level expression (re-evaluated per output row)
+-- rather than living inside an uncorrelated subquery (which Postgres would
+-- otherwise hoist and evaluate once for the whole statement).
+INSERT INTO sakila.film_category (film_id, category_id)
+SELECT film_id,
+       (ARRAY(SELECT category_id FROM sakila.category))[1 + floor(random() * (SELECT count(*) FROM sakila.category))::int]
+FROM sakila.film;
+
+INSERT INTO sakila.customer (first_name, last_name, email, active)
+SELECT fn, ln, lower(fn || '.' || ln || n || '@sakilamail.com'), (random() > 0.1)
+FROM (
+    SELECT
+        (ARRAY['Mary','Patricia','Linda','Barbara','Elizabeth','Jennifer','Maria','Susan','Margaret','Dorothy',
+               'James','John','Robert','Michael','William','David','Richard','Joseph','Thomas','Charles',
+               'Sofia','Noor','Aisha','Kenji','Hiro','Ines','Pablo','Anna','Ivan','Lars'])[floor(random()*30)+1] AS fn,
+        (ARRAY['Hunter','Palmer','Reeves','Blake','Ford','Owens','Powell','Price','Bryant','Russell',
+               'Chen','Kim','Patel','Nguyen','Singh','Kowalski','Muller','Rossi','Andersen','Silva'])[floor(random()*20)+1] AS ln,
+        n
+    FROM generate_series(1, 50) AS n
+) sub;
+
+-- Same ARRAY(...)-index technique as film_category above, for the same reason:
+-- a plain "(SELECT ... ORDER BY random() LIMIT 1)" scalar subquery here would
+-- be hoisted and evaluated once, giving every rental the same film and customer.
+INSERT INTO sakila.rental (rental_date, film_id, customer_id, return_date)
+SELECT
+    ts,
+    (ARRAY(SELECT film_id FROM sakila.film))[1 + floor(random() * (SELECT count(*) FROM sakila.film))::int],
+    (ARRAY(SELECT customer_id FROM sakila.customer))[1 + floor(random() * (SELECT count(*) FROM sakila.customer))::int],
+    ts + (1 + floor(random() * 10)) * INTERVAL '1 day'
+FROM (
+    SELECT (TIMESTAMP '2023-01-01' + (random() * 365 * 2) * INTERVAL '1 day') AS ts
+    FROM generate_series(1, 200)
+) sub;
+
+-- One payment per rental, roughly the film's rental rate plus a small variance.
+INSERT INTO sakila.payment (customer_id, rental_id, amount, payment_date)
+SELECT r.customer_id, r.rental_id,
+       f.rental_rate + round((random() * 2)::numeric, 2),
+       r.rental_date + INTERVAL '1 hour'
+FROM sakila.rental r
+JOIN sakila.film f ON f.film_id = r.film_id;
