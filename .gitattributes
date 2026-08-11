@@ -1,0 +1,10 @@
+# Normalize all text files to LF, regardless of core.autocrlf on any
+# contributor's machine, so tools like Biome (which expect LF) don't fail
+# on a Windows checkout.
+* text=auto eol=lf
+
+# Explicit binary types (git's heuristic would also catch these, but be explicit)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
