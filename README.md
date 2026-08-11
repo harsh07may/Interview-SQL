@@ -38,6 +38,12 @@ container:
 docker compose exec -T postgres psql -U postgres -d practice < scripts/reset.sql
 ```
 
+On Windows PowerShell, `<` redirection isn't supported — use this instead:
+
+```powershell
+Get-Content scripts/reset.sql | docker compose exec -T postgres psql -U postgres -d practice
+```
+
 `scripts/reset.sql` is never run automatically — only `database/01_schema.sql` and
 `database/02_seed.sql` are mounted into Postgres's auto-init directory
 (`/docker-entrypoint-initdb.d`).
@@ -46,7 +52,19 @@ docker compose exec -T postgres psql -U postgres -d practice < scripts/reset.sql
 
 1. Read the relevant `notes/<topic>.md` for a quick primer on the concept.
 2. Open `exercises/<topic>/NN_description.sql` and write your query in the space provided.
-3. Run it against the live database and check your results.
+3. Run it against the live database and check your results:
+
+   ```bash
+   docker compose exec -T postgres psql -U postgres -d practice < exercises/<topic>/NN_description.sql
+   ```
+
+   On Windows PowerShell:
+
+   ```powershell
+   Get-Content exercises/<topic>/NN_description.sql | docker compose exec -T postgres psql -U postgres -d practice
+   ```
+
+   Or connect with any Postgres client (see above) and run the query interactively.
 4. Compare against `exercises/<topic>/solutions/NN_description.sql` once you're done (or stuck).
 
 ## Directory structure
@@ -58,6 +76,10 @@ Interview-SQL/
 ├── database/
 │   ├── 01_schema.sql
 │   └── 02_seed.sql
+├── docs/
+│   └── superpowers/
+│       ├── specs/
+│       └── plans/
 ├── scripts/
 │   └── reset.sql
 ├── exercises/

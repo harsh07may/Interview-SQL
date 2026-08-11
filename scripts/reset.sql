@@ -11,6 +11,8 @@
 -- ./database into /docker-entrypoint-initdb.d for the life of the container,
 -- so these files stay readable there even outside of first-boot init.
 
+\set ON_ERROR_STOP on
+
 DROP SCHEMA IF EXISTS employees CASCADE;
 DROP SCHEMA IF EXISTS ecommerce CASCADE;
 DROP SCHEMA IF EXISTS sakila CASCADE;
