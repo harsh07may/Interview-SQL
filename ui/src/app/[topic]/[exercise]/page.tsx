@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { getExercise, getTopicNote, getTopic } from "@/lib/content";
+import Workspace from "@/components/Workspace";
 
 export default async function ExercisePage({
   params,
@@ -39,6 +40,7 @@ export default async function ExercisePage({
           {problem}
         </pre>
       </section>
+      <Workspace topic={topic} exercise={exercise} />
     </div>
   );
 }
