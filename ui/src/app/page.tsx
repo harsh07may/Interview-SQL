@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { listTopics } from "@/lib/content";
 
+// The exercises/notes content is a runtime-mounted Docker volume (see
+// docker-compose.yml), not part of the build image, so this page must not
+// be statically prerendered at `next build` time.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const topics = await listTopics();
 

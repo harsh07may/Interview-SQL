@@ -28,6 +28,14 @@ Connect with any Postgres client, e.g.:
 psql -h localhost -U postgres -d practice
 ```
 
+## Practice UI
+
+`docker compose up -d` also starts a web UI at <http://localhost:3000> — browse topics and
+exercises, read the notes, write and run SQL against the live database, and reveal the
+matching solution, all in one screen. It's a convenience layer on top of the same
+`notes/`/`exercises/` files described below; the manual `psql`/client workflow still works
+exactly as documented if you prefer it.
+
 ## Resetting the database
 
 Seed data is randomly generated on each fresh container init, so row counts and specific values
