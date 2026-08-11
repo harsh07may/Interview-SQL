@@ -1,0 +1,3 @@
+-- CTE 02: Using a CTE, compute current headcount per department (dept_emp
+-- rows still open, to_date = '9999-01-01'), then select only departments
+-- with more than 15 current employees. Show dept_name, headcount, highest first.
