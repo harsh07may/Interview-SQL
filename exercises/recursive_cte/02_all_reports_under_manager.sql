@@ -1,0 +1,3 @@
+-- Recursive CTE 02: List every employee who reports, directly or
+-- transitively, to the manager of the 'Development' department. Show
+-- emp_no and employee_name, ordered by employee_name.
