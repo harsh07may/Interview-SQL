@@ -1,3 +1,5 @@
+-- Four-way inner join: orders to customers (for the name), and orders to
+-- order_items to products (for each line item's product name and quantity).
 SELECT o.order_id,
        c.first_name || ' ' || c.last_name AS customer_name,
        o.order_date,

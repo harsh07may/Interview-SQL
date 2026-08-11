@@ -1,3 +1,5 @@
+-- Correlated subquery: for each product, compare its price to its own
+-- category's average price (the subquery re-evaluates per outer row).
 SELECT p.product_name, p.category_id, p.unit_price
 FROM ecommerce.products p
 WHERE p.unit_price > (

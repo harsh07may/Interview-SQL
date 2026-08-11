@@ -1,3 +1,5 @@
+-- Recursive CTE: anchor is the Development department's manager's direct
+-- reports, then the recursive member walks down further levels transitively.
 WITH RECURSIVE reports AS (
     SELECT emp_no, first_name, last_name, manager_emp_no
     FROM employees.employees

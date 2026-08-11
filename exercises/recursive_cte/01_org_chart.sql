@@ -2,3 +2,4 @@
 -- starting from the CEO (the one employee with manager_emp_no IS NULL).
 -- Show emp_no, employee_name, depth (0 for the CEO, 1 for their direct
 -- reports, etc). Order by depth then employee_name.
+

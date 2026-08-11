@@ -8,8 +8,8 @@ book.
 ## When
 Add an index on columns you frequently filter (`WHERE`), join on (`ON`), or sort by (`ORDER BY`) on
 a table large enough that a full scan is expensive. Every table in this repo's `database/01_schema.sql`
-already has indexes on its foreign-key join columns (e.g. `idx_salaries_emp_no`,
-`idx_rental_customer_id`) — that's not automatic in Postgres, unlike the primary key itself.
+already has indexes on its foreign-key join columns (e.g. `idx_rental_customer_id`,
+`idx_dept_manager_dept_no`) — that's not automatic in Postgres, unlike the primary key itself.
 
 ## Gotchas
 - A `PRIMARY KEY` automatically gets a unique index; a `FOREIGN KEY` does **not** — you must create

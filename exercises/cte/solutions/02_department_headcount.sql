@@ -1,3 +1,5 @@
+-- CTE computes current headcount per department first, then the outer query
+-- filters on that aggregate (equivalent to a HAVING, expressed via CTE).
 WITH current_headcount AS (
     SELECT d.dept_name, COUNT(*) AS headcount
     FROM employees.dept_emp de

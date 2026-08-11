@@ -1,3 +1,5 @@
+-- NOT EXISTS correlated subquery: keep films for which no matching rental
+-- row exists at all.
 SELECT f.film_id, f.title
 FROM sakila.film f
 WHERE NOT EXISTS (

@@ -104,7 +104,12 @@ INSERT INTO ecommerce.categories (category_name) VALUES
 ('Electronics'), ('Books'), ('Home & Kitchen'), ('Sports & Outdoors'),
 ('Toys & Games'), ('Clothing'), ('Beauty'), ('Grocery');
 
--- Uncorrelated subquery Postgres hoists and evaluates once — use ARRAY-index pattern for per-row randomization
+-- category_id uses ARRAY(...)-index rather than "(SELECT ... ORDER BY random()
+-- LIMIT 1)": that scalar-subquery form is an uncorrelated subquery Postgres
+-- hoists and evaluates ONCE for the whole statement, giving every product the
+-- SAME category — verified against a live postgres:17 instance. Indexing into
+-- a materialized array keeps random() as a plain top-level expression, which
+-- re-evaluates correctly per output row.
 INSERT INTO ecommerce.products (product_name, category_id, unit_price)
 SELECT
     (ARRAY['Wireless','Portable','Smart','Classic','Premium','Compact','Deluxe','Eco','Pro','Ultra'])[floor(random()*10)+1]
@@ -129,7 +134,7 @@ FROM (
     FROM generate_series(1, 50) AS n
 ) sub;
 
--- Uncorrelated subquery Postgres hoists and evaluates once — use ARRAY-index pattern for per-row randomization
+-- customer_id: same ARRAY(...)-index technique as products.category_id above.
 INSERT INTO ecommerce.orders (customer_id, order_date, status)
 SELECT
     (ARRAY(SELECT customer_id FROM ecommerce.customers))[1 + floor(random() * (SELECT count(*) FROM ecommerce.customers))::int],
@@ -137,8 +142,13 @@ SELECT
     (ARRAY['completed','completed','completed','shipped','cancelled'])[floor(random()*5)+1]
 FROM generate_series(1, 200);
 
--- 1-4 line items per order, random product each.
--- Uncorrelated LATERAL subquery Postgres hoists and evaluates once — add harmless outer-column reference to make it correlated
+-- 1-4 line items per order, random product each. "+ o.order_id * 0" is a
+-- no-op arithmetically, but it makes the ORDER BY reference the outer row,
+-- forcing Postgres to treat this LATERAL subquery (including its LIMIT) as
+-- correlated and re-evaluate it per order. Without it, the subquery has no
+-- reference to `o` at all, so Postgres evaluates it once for the whole
+-- statement and every order gets an identical, fixed set of line items —
+-- verified against a live postgres:17 instance.
 INSERT INTO ecommerce.order_items (order_id, product_id, quantity, unit_price)
 SELECT o.order_id, p.product_id, (1 + floor(random() * 4))::int, p.unit_price
 FROM ecommerce.orders o

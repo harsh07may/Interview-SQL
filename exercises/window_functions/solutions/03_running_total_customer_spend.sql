@@ -1,3 +1,6 @@
+-- First compute each order's total in a CTE, then use a SUM() window function
+-- with a running frame (PARTITION BY customer, ORDER BY date) to accumulate
+-- a running total per customer.
 WITH order_totals AS (
     SELECT o.order_id, o.customer_id, o.order_date,
            SUM(oi.quantity * oi.unit_price) AS order_total

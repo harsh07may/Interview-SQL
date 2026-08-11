@@ -1,3 +1,5 @@
+-- Recursive CTE: anchor is the CEO (manager_emp_no IS NULL, depth 0), then
+-- the recursive member walks down one management level per iteration.
 WITH RECURSIVE org_chart AS (
     SELECT emp_no, first_name, last_name, manager_emp_no, 0 AS depth
     FROM employees.employees

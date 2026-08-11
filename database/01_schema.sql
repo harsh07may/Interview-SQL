@@ -46,6 +46,7 @@ CREATE TABLE employees.dept_manager (
     to_date   DATE NOT NULL,
     PRIMARY KEY (emp_no, dept_no)
 );
+CREATE INDEX idx_dept_manager_dept_no ON employees.dept_manager (dept_no);
 
 CREATE TABLE employees.titles (
     emp_no    INT NOT NULL REFERENCES employees.employees (emp_no),
@@ -54,7 +55,6 @@ CREATE TABLE employees.titles (
     to_date   DATE NOT NULL,
     PRIMARY KEY (emp_no, title, from_date)
 );
-CREATE INDEX idx_titles_emp_no ON employees.titles (emp_no);
 
 CREATE TABLE employees.salaries (
     emp_no    INT NOT NULL REFERENCES employees.employees (emp_no),
@@ -63,7 +63,6 @@ CREATE TABLE employees.salaries (
     to_date   DATE NOT NULL,
     PRIMARY KEY (emp_no, from_date)
 );
-CREATE INDEX idx_salaries_emp_no ON employees.salaries (emp_no);
 
 -- ---------------------------------------------------------
 -- ecommerce schema — Northwind-style storefront sample
@@ -146,6 +145,7 @@ CREATE TABLE sakila.film_category (
     category_id INT NOT NULL REFERENCES sakila.category (category_id),
     PRIMARY KEY (film_id, category_id)
 );
+CREATE INDEX idx_film_category_category_id ON sakila.film_category (category_id);
 
 CREATE TABLE sakila.customer (
     customer_id SERIAL PRIMARY KEY,
@@ -173,3 +173,4 @@ CREATE TABLE sakila.payment (
     payment_date TIMESTAMP NOT NULL
 );
 CREATE INDEX idx_payment_customer_id ON sakila.payment (customer_id);
+CREATE INDEX idx_payment_rental_id ON sakila.payment (rental_id);

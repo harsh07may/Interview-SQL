@@ -1,3 +1,4 @@
 -- Joins 03: For every order, show order_id, the customer's full name,
 -- order_date, and for each line item the product_name and quantity
 -- (one row per order item). Order by order_id then product_name.
+

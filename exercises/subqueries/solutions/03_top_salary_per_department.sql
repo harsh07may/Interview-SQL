@@ -1,3 +1,5 @@
+-- Scalar correlated subquery in the SELECT list: for each department, look
+-- up the MAX current salary among its currently-assigned employees.
 SELECT d.dept_name,
        (
            SELECT MAX(s.salary)
