@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SQL Practice</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#38bdf8",
+                    "surface-bright": "#313a43",
+                    "secondary-fixed-dim": "#74dd7e",
+                    "on-background": "#dae3ee",
+                    "primary-fixed": "#c4e7ff",
+                    "on-secondary": "#003910",
+                    "on-primary-fixed": "#001e2c",
+                    "inverse-on-surface": "#29313a",
+                    "secondary": "#74dd7e",
+                    "on-surface": "#dae3ee",
+                    "primary": "#8ed5ff",
+                    "surface-container": "#182028",
+                    "surface-container-highest": "#2d363e",
+                    "on-tertiary": "#690007",
+                    "outline-variant": "#3e484f",
+                    "surface-dim": "#0b141c",
+                    "secondary-fixed": "#90fa97",
+                    "tertiary-fixed": "#ffdad6",
+                    "primary-fixed-dim": "#7bd0ff",
+                    "on-secondary-container": "#c4ffc2",
+                    "surface-variant": "#2d363e",
+                    "inverse-primary": "#00668a",
+                    "error": "#ffb4ab",
+                    "on-surface-variant": "#bdc8d1",
+                    "tertiary-container": "#ff9389",
+                    "on-primary-fixed-variant": "#004c69",
+                    "inverse-surface": "#dae3ee",
+                    "on-tertiary-fixed": "#410002",
+                    "on-primary-container": "#004965",
+                    "secondary-container": "#007f2d",
+                    "surface": "#0b141c",
+                    "surface-tint": "#7bd0ff",
+                    "error-container": "#93000a",
+                    "background": "#0b141c",
+                    "surface-container-lowest": "#060f16",
+                    "on-error": "#690005",
+                    "on-secondary-fixed-variant": "#00531b",
+                    "outline": "#87929a",
+                    "on-secondary-fixed": "#002106",
+                    "surface-container-low": "#141c24",
+                    "tertiary": "#ffbcb5",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-container": "#8d000c",
+                    "on-tertiary-fixed-variant": "#93000d",
+                    "surface-container-high": "#222b33",
+                    "tertiary-fixed-dim": "#ffb4ac",
+                    "on-primary": "#00354a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "element-gap": "8px",
+                    "container-padding": "16px",
+                    "toolbar-height": "40px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "display-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "code-md": ["JetBrains Mono"],
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "code-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3e484f; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #87929a; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased overflow-hidden h-screen flex w-full">
+<aside class="bg-surface-container w-sidebar-width h-full fixed left-0 top-0 border-r border-outline-variant flex flex-col py-container-padding z-50">
+<div class="px-container-padding mb-6">
+<h1 class="font-display-sm text-display-sm text-primary">SQL Practice</h1>
+<div class="text-on-surface-variant font-body-sm text-body-sm mt-1">Junior Dev Track</div>
+</div>
+<nav class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+<div class="flex flex-col">
+<div class="flex items-center px-container-padding py-2 cursor-pointer active:opacity-80 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined mr-3 text-primary-container" style="font-variation-settings: 'FILL' 0;">menu_book</span>
+<span class="text-primary-container font-bold border-l-2 border-primary-container pl-2 -ml-[18px]">Basics</span>
+</div>
+<div class="ml-11 mr-4 mt-1 mb-2 flex flex-col gap-1 border-l border-outline-variant pl-3">
+<div class="flex items-center text-on-surface-variant font-body-sm text-body-sm py-1 cursor-pointer hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[14px] mr-2 text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        00 · Intro to SELECT
+                    </div>
+<div class="flex items-center text-primary-container font-body-sm text-body-sm py-1 font-bold cursor-pointer bg-surface-container-highest rounded px-2 -ml-2">
+<span class="material-symbols-outlined text-[14px] mr-2 opacity-0">check_circle</span>
+                        01 · Revenue per category
+                    </div>
+<div class="flex items-center text-on-surface-variant font-body-sm text-body-sm py-1 cursor-pointer hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[14px] mr-2 opacity-0">check_circle</span>
+                        02 · Filtering data
+                    </div>
+</div>
+</div>
+<div class="flex items-center px-container-padding py-2 cursor-pointer active:opacity-80 hover:bg-surface-container-highest transition-colors text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 0;">join_inner</span>
+<span>Joins</span>
+</div>
+<div class="flex items-center px-container-padding py-2 cursor-pointer active:opacity-80 hover:bg-surface-container-highest transition-colors text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 0;">stacks</span>
+<span>Subqueries</span>
+</div>
+<div class="flex items-center px-container-padding py-2 cursor-pointer active:opacity-80 hover:bg-surface-container-highest transition-colors text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 0;">functions</span>
+<span>Aggregates</span>
+</div>
+<div class="flex items-center px-container-padding py-2 cursor-pointer active:opacity-80 hover:bg-surface-container-highest transition-colors text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 0;">account_balance</span>
+<span>Transactions</span>
+</div>
+</nav>
+<div class="mt-auto px-container-padding pt-4 border-t border-outline-variant flex flex-col gap-2">
+<button class="w-full bg-surface-container-high text-on-surface py-2 rounded text-body-sm font-bold hover:bg-surface-container-highest transition-colors border border-outline-variant">View Progress</button>
+<div class="flex justify-around mt-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined">settings</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined">help</span></button>
+</div>
+</div>
+</aside>
+<main class="ml-[260px] flex-1 flex flex-col h-full bg-background relative">
+<header class="bg-surface h-toolbar-height w-full sticky top-0 z-40 border-b border-outline-variant flex justify-between items-center px-container-padding">
+<nav class="flex h-full gap-6 items-center">
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors focus:outline-none h-full flex items-center" href="#">Schema Explorer</a>
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors focus:outline-none h-full flex items-center" href="#">ER Diagram</a>
+</nav>
+<div class="flex items-center gap-4 h-full">
+<div class="flex gap-2 mr-4 border-r border-outline-variant pr-4">
+<span class="px-2 py-0.5 bg-surface-container border border-outline-variant rounded-full font-label-caps text-label-caps text-primary-container">Schema: Ecommerce</span>
+<span class="px-2 py-0.5 bg-surface-container border border-outline-variant rounded-full font-label-caps text-label-caps text-primary-container">Database: Postgres</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">history</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">share</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="bg-primary-container text-on-primary-container hover:bg-primary transition-colors px-3 h-[28px] rounded font-body-sm text-body-sm font-bold flex items-center gap-1 focus:outline-none ml-2">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span> Run Query
+                </button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+<div class="max-w-5xl mx-auto flex flex-col gap-6 pb-20">
+<div class="bg-surface border border-outline-variant rounded-lg p-6 flex flex-col gap-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Joins Basics</h2>
+<div class="flex gap-6 text-on-surface-variant font-body-md text-body-md border-b border-outline-variant pb-2">
+<span class="text-primary border-b-2 border-primary pb-2 -mb-[9px] font-bold">What / When</span>
+<span class="hover:text-on-surface cursor-pointer">Gotchas</span>
+<span class="hover:text-on-surface cursor-pointer">Cheatsheet</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        A <code class="bg-surface-container px-1 py-0.5 rounded font-code-sm text-code-sm border border-outline-variant">JOIN</code> clause is used to combine rows from two or she more tables, based on a related column between them. Inner joins return records that have matching values in both tables.
+                    </p>
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-4 font-code-sm text-code-sm text-on-surface overflow-x-auto">
+<span class="text-primary-container">SELECT</span> p.product_name, c.category_name<br/>
+<span class="text-primary-container">FROM</span> products p<br/>
+<span class="text-primary-container">INNER JOIN</span> categories c <span class="text-primary-container">ON</span> p.category_id = c.id;
+                    </div>
+</div>
+<div class="bg-surface-container-low border-l-4 border-primary-container border-y border-r border-outline-variant rounded-lg p-6 shadow-sm">
+<div class="flex items-start justify-between mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Exercise 04: Revenue per Category</h3>
+<span class="bg-surface-container px-2 py-1 rounded text-label-caps font-label-caps text-on-surface-variant border border-outline-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">timer</span> 10 Min
+                        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Calculate total revenue for each product category for the year 2023. Sort the results in descending order of revenue.
+                    </p>
+<div class="mt-4 flex gap-2">
+<span class="font-code-sm text-code-sm text-on-surface bg-surface border border-outline-variant px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">table</span> orders
+                        </span>
+<span class="font-code-sm text-code-sm text-on-surface bg-surface border border-outline-variant px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">table</span> products
+                        </span>
+</div>
+</div>
+<div class="flex flex-col border border-outline-variant rounded-lg overflow-hidden bg-surface-container-lowest shadow-sm">
+<div class="bg-surface border-b border-outline-variant px-4 py-2 flex justify-between items-center">
+<div class="flex gap-2 items-center">
+<span class="material-symbols-outlined text-outline text-[16px]">code</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-bold">query.sql</span>
+</div>
+</div>
+<div class="flex min-h-[200px]">
+<div class="w-12 bg-surface-container-low border-r border-outline-variant flex flex-col items-end pr-2 py-4 font-code-md text-code-md text-outline select-none opacity-50">
+<div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+</div>
+<div class="flex-1 p-4 font-code-md text-code-md text-primary bg-surface-container-lowest focus-within:outline-none relative">
+<textarea class="absolute inset-0 w-full h-full bg-transparent resize-none outline-none p-4 text-on-surface font-code-md text-code-md border-none focus:ring-0 custom-scrollbar" placeholder="-- write your query here"></textarea>
+</div>
+</div>
+<div class="bg-surface border-t border-outline-variant px-4 py-2 flex justify-end items-center">
+<div class="flex items-center gap-3">
+<span class="font-body-sm text-body-sm text-on-surface-variant opacity-70">Hint: ⌘ + Enter to run</span>
+<button class="bg-primary-container text-on-primary-container hover:bg-primary transition-colors px-4 h-8 rounded font-body-sm text-body-sm font-bold flex items-center gap-1">
+                                Run Code
+                            </button>
+</div>
+</div>
+</div>
+<div class="flex flex-col border border-outline-variant rounded-lg overflow-hidden bg-surface shadow-sm">
+<div class="bg-surface-container border-b border-outline-variant px-4 py-2 flex justify-between items-center">
+<h4 class="font-body-sm text-body-sm text-on-surface font-bold">Results</h4>
+<span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded">42 rows</span>
+</div>
+<div class="overflow-x-auto custom-scrollbar max-h-[300px]">
+<table class="w-full text-left border-collapse font-code-sm text-code-sm whitespace-nowrap">
+<thead class="sticky top-0 bg-surface z-10 border-b-2 border-outline-variant">
+<tr>
+<th class="px-4 py-2 text-on-surface font-bold">category_name</th>
+<th class="px-4 py-2 text-on-surface font-bold text-right">total_revenue</th>
+<th class="px-4 py-2 text-on-surface font-bold text-right">order_count</th>
+</tr>
+</thead>
+<tbody class="text-on-surface-variant">
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<td class="px-4 py-2 border-r border-outline-variant/30 text-secondary">Electronics</td>
+<td class="px-4 py-2 border-r border-outline-variant/30 text-right">1,245,000.00</td>
+<td class="px-4 py-2 text-right">8,432</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors bg-surface-container-lowest/50">
+<td class="px-4 py-2 border-r border-outline-variant/30 text-secondary">Apparel</td>
+<td class="px-4 py-2 border-r border-outline-variant/30 text-right">980,500.50</td>
+<td class="px-4 py-2 text-right">12,105</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<td class="px-4 py-2 border-r border-outline-variant/30 text-secondary">Home &amp; Garden</td>
+<td class="px-4 py-2 border-r border-outline-variant/30 text-right">750,200.00</td>
+<td class="px-4 py-2 text-right">5,320</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors bg-surface-container-lowest/50">
+<td class="px-4 py-2 border-r border-outline-variant/30 text-secondary">Sports</td>
+<td class="px-4 py-2 border-r border-outline-variant/30 text-right">420,100.75</td>
+<td class="px-4 py-2 text-right">3,110</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-4 py-2 border-r border-outline-variant/30 text-secondary">Books</td>
+<td class="px-4 py-2 border-r border-outline-variant/30 text-right">115,400.00</td>
+<td class="px-4 py-2 text-right">9,840</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="border border-outline-variant rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="p-4 flex items-center justify-between text-on-surface-variant group-hover:text-on-surface">
+<div class="flex items-center gap-2 font-body-md text-body-md font-bold">
+<span class="material-symbols-outlined text-[20px] text-primary-container">lightbulb</span>
+                            Show Solution
+                        </div>
+<span class="material-symbols-outlined transition-transform group-hover:translate-y-0.5">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
