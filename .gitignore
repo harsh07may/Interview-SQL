@@ -11,3 +11,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node (ui/)
+node_modules/
+.next/
+.env*.local
+tsconfig.tsbuildinfo

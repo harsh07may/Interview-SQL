@@ -15,5 +15,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
 
+  ui:
+    build: ./ui
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/practice
+      CONTENT_ROOT: /app/content
+    volumes:
+      - ./notes:/app/content/notes:ro
+      - ./exercises:/app/content/exercises:ro
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
