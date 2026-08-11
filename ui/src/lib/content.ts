@@ -1,7 +1,9 @@
-import { readFile, readdir } from "fs/promises";
-import path from "path";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import { isErrnoException } from "./errors";
 
-const CONTENT_ROOT = process.env.CONTENT_ROOT ?? path.resolve(process.cwd(), "..");
+const CONTENT_ROOT =
+  process.env.CONTENT_ROOT ?? path.resolve(process.cwd(), "..");
 const NOTES_DIR = path.join(CONTENT_ROOT, "notes");
 const EXERCISES_DIR = path.join(CONTENT_ROOT, "exercises");
 
@@ -60,18 +62,29 @@ export async function getTopicNote(topicSlug: string): Promise<string | null> {
   const notePath = path.join(NOTES_DIR, `${topicSlug}.md`);
   try {
     return await readFile(notePath, "utf-8");
-  } catch (err: any) {
-    if (err.code === "ENOENT") return null;
+  } catch (err) {
+    if (isErrnoException(err) && err.code === "ENOENT") return null;
     throw err;
   }
 }
 
-export async function getExercise(topicSlug: string, exerciseSlug: string): Promise<string> {
+export async function getExercise(
+  topicSlug: string,
+  exerciseSlug: string,
+): Promise<string> {
   const filePath = path.join(EXERCISES_DIR, topicSlug, `${exerciseSlug}.sql`);
   return readFile(filePath, "utf-8");
 }
 
-export async function getSolution(topicSlug: string, exerciseSlug: string): Promise<string> {
-  const filePath = path.join(EXERCISES_DIR, topicSlug, "solutions", `${exerciseSlug}.sql`);
+export async function getSolution(
+  topicSlug: string,
+  exerciseSlug: string,
+): Promise<string> {
+  const filePath = path.join(
+    EXERCISES_DIR,
+    topicSlug,
+    "solutions",
+    `${exerciseSlug}.sql`,
+  );
   return readFile(filePath, "utf-8");
 }

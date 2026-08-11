@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runQuery } from "@/lib/db";
+import { errorMessage, isErrnoException } from "@/lib/errors";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -12,13 +13,15 @@ export async function POST(request: Request) {
   try {
     const result = await runQuery(sql);
     return NextResponse.json(result);
-  } catch (err: any) {
-    if (err.code === "ECONNREFUSED") {
+  } catch (err) {
+    if (isErrnoException(err) && err.code === "ECONNREFUSED") {
       return NextResponse.json(
-        { error: "Database not reachable — is `docker compose up -d` running?" },
-        { status: 503 }
+        {
+          error: "Database not reachable — is `docker compose up -d` running?",
+        },
+        { status: 503 },
       );
     }
-    return NextResponse.json({ error: err.message ?? String(err) }, { status: 400 });
+    return NextResponse.json({ error: errorMessage(err) }, { status: 400 });
   }
 }

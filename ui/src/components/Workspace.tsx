@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import CodeMirror from "@uiw/react-codemirror";
 import { sql } from "@codemirror/lang-sql";
-import type { RunResult } from "@/lib/db";
+import CodeMirror from "@uiw/react-codemirror";
+import { useState } from "react";
 import SolutionPanel from "@/components/SolutionPanel";
+import type { RunResult } from "@/lib/db";
 
 export default function Workspace({
   topic,
@@ -52,6 +52,7 @@ export default function Workspace({
         placeholder="-- write your query here"
       />
       <button
+        type="button"
         onClick={runQuery}
         disabled={running || !query.trim()}
         className="mt-3 rounded bg-sky-600 px-3 py-1.5 text-sm font-medium disabled:opacity-50"
@@ -67,12 +68,17 @@ export default function Workspace({
 
       {result && (
         <div className="mt-3 overflow-x-auto">
-          <p className="mb-1 text-sm text-neutral-400">{result.rows.length} row(s)</p>
+          <p className="mb-1 text-sm text-neutral-400">
+            {result.rows.length} row(s)
+          </p>
           <table className="border-collapse font-mono text-sm">
             <thead>
               <tr>
                 {result.columns.map((col) => (
-                  <th key={col} className="border border-neutral-800 px-2 py-1 text-left">
+                  <th
+                    key={col}
+                    className="border border-neutral-800 px-2 py-1 text-left"
+                  >
                     {col}
                   </th>
                 ))}
@@ -80,8 +86,10 @@ export default function Workspace({
             </thead>
             <tbody>
               {result.rows.map((row, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: query result rows have no stable identity and the whole table is replaced (never reordered) on each run
                 <tr key={i}>
                   {row.map((cell, j) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: cell position within a fixed-width row is a stable identity here
                     <td key={j} className="border border-neutral-800 px-2 py-1">
                       {cell === null ? "NULL" : String(cell)}
                     </td>

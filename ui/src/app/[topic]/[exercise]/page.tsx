@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { getExercise, getTopicNote, getTopic } from "@/lib/content";
 import Workspace from "@/components/Workspace";
+import { getExercise, getTopic, getTopicNote } from "@/lib/content";
+import { isErrnoException } from "@/lib/errors";
 
 export default async function ExercisePage({
   params,
@@ -13,12 +14,15 @@ export default async function ExercisePage({
   let problem: string;
   try {
     problem = await getExercise(topic, exercise);
-  } catch (err: any) {
-    if (err.code === "ENOENT") notFound();
+  } catch (err) {
+    if (isErrnoException(err) && err.code === "ENOENT") notFound();
     throw err;
   }
 
-  const [note, topicData] = await Promise.all([getTopicNote(topic), getTopic(topic)]);
+  const [note, topicData] = await Promise.all([
+    getTopicNote(topic),
+    getTopic(topic),
+  ]);
 
   return (
     <div>

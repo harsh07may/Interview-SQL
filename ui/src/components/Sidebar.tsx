@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { Topic } from "@/lib/content";
 
 export default function Sidebar() {
@@ -10,6 +10,8 @@ export default function Sidebar() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const pathname = usePathname();
 
+  // Only fetch once on mount; expanding/collapsing afterward is manual.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount only
   useEffect(() => {
     fetch("/api/topics")
       .then((res) => res.json())
@@ -20,8 +22,6 @@ export default function Sidebar() {
           setExpanded(new Set([currentTopic]));
         }
       });
-    // Only fetch once on mount; expanding/collapsing afterward is manual.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function toggleTopic(slug: string) {
@@ -43,6 +43,7 @@ export default function Sidebar() {
         {topics.map((topic) => (
           <li key={topic.slug}>
             <button
+              type="button"
               className="w-full py-1.5 text-left text-sm"
               onClick={() => toggleTopic(topic.slug)}
             >
@@ -58,7 +59,9 @@ export default function Sidebar() {
                       <Link
                         href={href}
                         className={`block py-1 text-sm ${
-                          isActive ? "font-semibold text-sky-400" : "text-neutral-400"
+                          isActive
+                            ? "font-semibold text-sky-400"
+                            : "text-neutral-400"
                         }`}
                       >
                         {exercise.number} · {exercise.title}

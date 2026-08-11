@@ -27,7 +27,11 @@ export default function SolutionPanel({
 
   return (
     <div className="mt-4">
-      <button onClick={toggle} className="rounded border border-neutral-700 px-3 py-1.5 text-sm">
+      <button
+        type="button"
+        onClick={toggle}
+        className="rounded border border-neutral-700 px-3 py-1.5 text-sm"
+      >
         {open ? "Hide solution" : "Show solution"}
       </button>
       {open && (
